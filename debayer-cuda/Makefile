@@ -24,7 +24,7 @@ obj = $(source:.cu=.o)
 #===============================================================================
 
 # Standard Flags
-CFLAGS := $(EXTRA_CFLAGS) -I../debayer-sycl -std=c++17 -Xcompiler -Wall -arch=$(ARCH)
+CFLAGS := $(EXTRA_CFLAGS) --std=c++17 -Xcompiler=-Wall -arch=$(ARCH)
 
 # Linker Flags
 LDFLAGS = 
@@ -39,6 +39,7 @@ endif
 ifeq ($(OPTIMIZE),yes)
   CFLAGS += -O3
 endif
+
 #===============================================================================
 # Targets to Build
 #===============================================================================
@@ -46,7 +47,7 @@ endif
 $(program): $(obj) Makefile
 	$(CC) $(CFLAGS) $(obj) -o $@ $(LDFLAGS)
 
-%.o: %.cu ../debayer-sycl/util.h image.h kernel.h Makefile
+%.o: %.cu util.h image.h kernel.h Makefile
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
