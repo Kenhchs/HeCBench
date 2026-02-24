@@ -15,21 +15,19 @@
   You should have received a copy of the GNU Affero General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****/
-#include <cuda.h>
-#include "src/basic/masking.h"
+
+#include "masking.h"
+#include <sycl/sycl.hpp>
 
 
 #define SEQ_LEN 33
-
-__device__
 inline double firstRepeatOffsetProb(const double probMult, const int maxRepeatOffset) {
   if (probMult < 1 || probMult > 1)
-    return (1 - probMult) / (1 - pow(probMult, (double)maxRepeatOffset));
+    return (1 - probMult) / (1 - sycl::pow(probMult, (double)maxRepeatOffset));
   else
     return 1.0 / maxRepeatOffset;
 }
 
-__device__
 void maskProbableLetters(const int size,
     unsigned char *seqBeg,
     const float *probabilities,
@@ -41,7 +39,6 @@ void maskProbableLetters(const int size,
       seqBeg[i] = maskTable[seqBeg[i]];
 }
 
-__device__
 int calcRepeatProbs(float *letterProbs,
     const unsigned char *seqBeg,
     const int size,
@@ -113,7 +110,7 @@ int calcRepeatProbs(float *letterProbs,
     float nonRepeatProb = letterProbs[k] * backgroundProb * fTot_inv;
     letterProbs[k] = 1.f - nonRepeatProb;
 
-    const int k_cap  = min(k, maxRepeatOffset);
+    const int k_cap  = sycl::min(k, maxRepeatOffset);
 
     if (k % scaleStepSize == scaleStepSize - 1) {
       const double scale = scaleFactors[k/ scaleStepSize];
@@ -143,13 +140,13 @@ int calcRepeatProbs(float *letterProbs,
   }
 
   const double bTot = backgroundProb;
-  return (fabs(fTot - bTot) > fmax(fTot, bTot) / 1e6);
+  return (sycl::fabs(fTot - bTot) > sycl::fmax(fTot, bTot) / 1e6);
 }
 
-  __global__ void
-maskSequences(unsigned char * seqs,
-    const double * __restrict__ likelihoodRatioMatrix,
-    const unsigned char * __restrict__ maskTable,
+void maskSequences(
+    unsigned char * seqs,
+    const double * likelihoodRatioMatrix,
+    const unsigned char * maskTable,
     const int size                     ,
     const int maxRepeatOffset          ,
     const double repeatProb            ,
@@ -158,9 +155,10 @@ maskSequences(unsigned char * seqs,
     const double firstGapProb          ,
     const double otherGapProb          ,
     const double minMaskProb           ,
-    int seqs_len )
+    int seqs_len,
+    sycl::nd_item<1> &item )
 {
-  int gid = blockIdx.x*blockDim.x+threadIdx.x;
+  int gid = item.get_global_id(0);
   if (gid >= seqs_len) return;
 
   unsigned char* seqBeg = seqs+gid*33;
@@ -216,12 +214,12 @@ Masking::Masking(const Score_matrix &score_matrix)
     mask_table_bit_[i] = (uint8_t)i | bit_mask;
     for (unsigned j = 0; j < size; ++j)
       if (i < value_traits.alphabet_size && j < value_traits.alphabet_size)
-        likelihoodRatioMatrix_[i][j] = exp(lambda * score_matrix(i, j));
+        likelihoodRatioMatrix_[i][j] = std::exp(lambda * score_matrix(i, j));
   }
   std::copy(likelihoodRatioMatrix_, likelihoodRatioMatrix_ + size, probMatrixPointers_);
   int firstGapCost = score_matrix.gap_extend() + score_matrix.gap_open();
-  firstGapProb_ = exp(-lambda * firstGapCost);
-  otherGapProb_ = exp(-lambda * score_matrix.gap_extend());
+  firstGapProb_ = std::exp(-lambda * firstGapCost);
+  otherGapProb_ = std::exp(-lambda * score_matrix.gap_extend());
   firstGapProb_ /= (1 - otherGapProb_);
 }
 
@@ -270,6 +268,16 @@ unsigned char* Masking::call_opt(Sequence_set &seqs) const
   Timer t;
   t.start();
 
+#ifdef USE_GPU
+  sycl::queue q(sycl::gpu_selector_v, sycl::property::queue::in_order());
+#else
+  sycl::queue q(sycl::cpu_selector_v, sycl::property::queue::in_order());
+#endif
+
+  const int BLOCK_SIZE=128;
+  sycl::range<1> gws ((n+BLOCK_SIZE-1)/BLOCK_SIZE*BLOCK_SIZE);
+  sycl::range<1> lws (BLOCK_SIZE);
+
   const int size = len;
   const int maxRepeatOffset = 50;
   const double repeatProb = 0.005;
@@ -280,39 +288,38 @@ unsigned char* Masking::call_opt(Sequence_set &seqs) const
   const double minMaskProb = 0.5;
   const int seqs_len = n;
 
-  unsigned char* d_seqs;
-  cudaMalloc((void**)&d_seqs, total);
-  cudaMemcpy(d_seqs, seqs_device, total, cudaMemcpyHostToDevice);
+  unsigned char *d_seqs = (unsigned char*) sycl::malloc_device(total, q);
+  q.memcpy(d_seqs, seqs_device, total);
 
-  unsigned char* d_maskTable;
-  cudaMalloc((void**)&d_maskTable, size);
-  cudaMemcpy(d_maskTable, mask_table_device, size, cudaMemcpyHostToDevice);
+  unsigned char *d_maskTable = sycl::malloc_device<unsigned char>(size, q);
+  q.memcpy(d_maskTable, mask_table_device, size);
 
-  double* d_probMat;
-  cudaMalloc((void **)&d_probMat, sizeof(double) * size * size);
-  cudaMemcpy(d_probMat, probMat_device, sizeof(double)*size*size, cudaMemcpyHostToDevice);
+  double *d_probMat = sycl::malloc_device<double>(size*size, q);
+  q.memcpy(d_probMat, probMat_device, sizeof(double)*size*size);
 
-  dim3 grids ((seqs_len+128)/128);
-  dim3 threads (128);
+  q.submit([&](sycl::handler &h) {
+    h.parallel_for(sycl::nd_range<1>(gws, lws), [=](sycl::nd_item<1> item) {
+     maskSequences(
+         d_seqs,
+         d_probMat,
+         d_maskTable,
+         size,
+         maxRepeatOffset,
+         repeatProb,
+         repeatEndProb,
+         repeatOffsetProbDecay,
+         firstGapProb,
+         otherGapProb,
+         minMaskProb,
+         seqs_len,
+         item);
+     });
+  });
 
-  maskSequences<<<grids, threads>>>(
-      d_seqs,
-      d_probMat,
-      d_maskTable,
-      size,
-      maxRepeatOffset,
-      repeatProb,
-      repeatEndProb,
-      repeatOffsetProbDecay,
-      firstGapProb,
-      otherGapProb,
-      minMaskProb,
-      seqs_len);
-
-  cudaMemcpy(seqs_device, d_seqs, total, cudaMemcpyDeviceToHost);
-  cudaFree(d_seqs);
-  cudaFree(d_maskTable);
-  cudaFree(d_probMat);
+  q.memcpy(seqs_device, d_seqs, total).wait();
+  sycl::free(d_seqs, q);
+  sycl::free(d_maskTable, q);
+  sycl::free(d_probMat, q);
 
   message_stream << "Total time (maskSequences) on the device = " <<
     t.getElapsedTimeInMicroSec() / 1e6 << " s" << std::endl;
