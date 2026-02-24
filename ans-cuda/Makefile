@@ -1,8 +1,10 @@
 ARCH = 60
 
 NVCC = nvcc
-NVCC_ARCH = -gencode arch=compute_$(ARCH),code=sm_$(ARCH)
-NVCC_FLAGS = --std=c++17 -O3 -arch=sm_$(ARCH)
+# Strip "sm_" prefix if user provides it
+ARCH_NUM := $(subst sm_,,$(ARCH))
+NVCC_ARCH = -gencode arch=compute_$(ARCH_NUM),code=sm_$(ARCH_NUM)
+NVCC_FLAGS = --std=c++17 -O3 -arch=sm_$(ARCH_NUM)
 
 INC_DIR = include
 SRC_DIR = src
