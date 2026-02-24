@@ -9,9 +9,10 @@ DEBUG     = no
 ARCH      = sm_60
 #MPI_ROOT  = /usr/lib/x86_64-linux-gnu/openmpi
 #LAUNCHER  = /usr/bin/mpirun -n 2
-NVHPC_SDK = /opt/nvidia/hpc_sdk/Linux_x86_64/24.5
-MPI_ROOT  = $(NVHPC_SDK)/comm_libs/12.4/openmpi4/openmpi-4.1.5
-LAUNCHER  = $(NVHPC_SDK)/comm_libs/mpi/bin/mpirun -n 2
+NVHPC_SDK = /opt/nvidia/hpc_sdk/Linux_x86_64/25.11
+MPI_ROOT  = $(NVHPC_SDK)/comm_libs/13.0/hpcx/hpcx-2.25.1/ompi
+LAUNCHER  = $(NVHPC_SDK)/comm_libs/mpi/bin/mpirun -n 1 # Only have 1 GPU
+NCCL_ROOT = $(NVHPC_SDK)/comm_libs/13.0/nccl
 
 #===============================================================================
 # Program name & source code list
@@ -29,10 +30,12 @@ obj = $(source:.cu=.o)
 
 # Standard Flags
 CFLAGS := $(EXTRA_CFLAGS) -std=c++17 -I$(MPI_ROOT)/include \
-          -Xcompiler -Wall -arch=$(ARCH)
+          -Xcompiler -Wall -arch=$(ARCH) -I$(NCCL_ROOT)/include
 
 # Linker Flags
-LDFLAGS = -L$(MPI_ROOT)/lib -lmpi -lnccl
+LDFLAGS = -L$(MPI_ROOT)/lib -lmpi \
+		  -L$(NCCL_ROOT)/lib -lnccl \
+		  -Xlinker -rpath -Xlinker $(NCCL_ROOT)/lib
 
 # Debug Flags
 ifeq ($(DEBUG),yes)
