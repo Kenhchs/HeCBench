@@ -24,7 +24,7 @@ obj = preprocess.o Timer.o numeric.o symbolic.o main.o $(SLU_LIBS)
 #===============================================================================
 # Sets Flags
 #===============================================================================
-SLU_INC = -I$(SLU_PATH)/../include \
+SLU_INC = -I$(SLU_PATH)/include \
           -I$(SLU_PATH)/nicslu/include \
           -I$(SLU_PATH)/nicslu/util
 
