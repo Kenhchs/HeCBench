@@ -15,7 +15,7 @@ LAUNCHER  =
 
 program = main
 
-source = main.cu ../extend2-sycl/read_data.cpp
+source = main.cu read_data.cpp
 obj = main.o read_data.o
 
 #===============================================================================
@@ -23,7 +23,7 @@ obj = main.o read_data.o
 #===============================================================================
 
 # Standard Flags
-CFLAGS := $(EXTRA_CFLAGS) -std=c++17 -Xcompiler -Wall -arch=$(ARCH) -I../extend2-sycl
+CFLAGS := $(EXTRA_CFLAGS) -std=c++17 -Xcompiler -Wall -arch=$(ARCH)
 
 # Linker Flags
 LDFLAGS = 
@@ -50,8 +50,8 @@ $(program): $(obj) Makefile
 main.o: main.cu filelist.txt 
 	$(CC) $(CFLAGS) -o main.o -c main.cu
 
-read_data.o: ../extend2-sycl/read_data.cpp ../extend2-sycl/read_data.h
-	$(CC) $(CFLAGS) -o read_data.o -c ../extend2-sycl/read_data.cpp
+read_data.o: read_data.cpp read_data.h
+	$(CC) $(CFLAGS) -o read_data.o -c read_data.cpp
 
 clean:
 	rm -rf $(program) $(obj)
