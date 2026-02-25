@@ -1,13 +1,14 @@
 #===============================================================================
 # User Options
 #===============================================================================
-MPI_ROOT=/opt/nvidia/hpc_sdk/Linux_x86_64/21.3/comm_libs/mpi
-CUBLAS_ROOT=/opt/nvidia/hpc_sdk/Linux_x86_64/21.3/math_libs/11.2
-CUDART_ROOT=/opt/nvidia/hpc_sdk/Linux_x86_64/21.3/cuda/11.2
+NVHPC_SDK   = /opt/nvidia/hpc_sdk/Linux_x86_64/25.11
+MPI_ROOT    = $(NVHPC_SDK)/comm_libs/13.0/hpcx/hpcx-2.25.1/ompi
+CUBLAS_ROOT = $(NVHPC_SDK)/math_libs/13.0
+CUDART_ROOT = $(NVHPC_SDK)/cuda/13.0
 
 # Compiler can be set below, or via environment variable
 CC        = nvcc
-LD        = mpiCC #$(MPI_ROOT)/bin/mpiCC
+LD        = $(MPI_ROOT)/bin/mpiCC
 OPTIMIZE  = yes
 DEBUG     = no
 ARCH      = sm_60
@@ -59,4 +60,4 @@ clean:
 	rm -rf $(program) $(obj)
 
 run: $(program)
-	$(LAUNCHER) mpirun -n 4 ./$(program) --num_vector 4000 --num_field 90000 --num_iterations 10
+	$(LAUNCHER) $(MPI_ROOT)/bin/mpirun -n 4 ./$(program) --num_vector 4000 --num_field 90000 --num_iterations 10
