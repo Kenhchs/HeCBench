@@ -1,13 +1,14 @@
 NVCC_BIN=nvcc
 
 # the path may be adjusted for each platform
-MPI_INCLUDE=/usr/lib/x86_64-linux-gnu/openmpi/include
+MPI_ROOT  = /opt/nvidia/hpc_sdk/Linux_x86_64/25.11/comm_libs/13.0/hpcx/hpcx-2.25.1/ompi
+#MPI_INCLUDE=/usr/lib/x86_64-linux-gnu/openmpi/include
 #MPI_INCLUDE=/usr/include/openmpi-x86_64/
 
 OPT=-O3 -DRCB_UNTHREADED_BUILD -DUSE_SERIAL_COSMO
 
 #NVCC_FLAGS=-use_fast_math -DINLINE_FORCE -I${MPI_INCLUDE}
-NVCC_FLAGS=-I${MPI_INCLUDE}
+NVCC_FLAGS=-I${MPI_ROOT}/include
 
 HACC_PLATFORM=cuda
 HACC_OBJDIR=${HACC_PLATFORM}
