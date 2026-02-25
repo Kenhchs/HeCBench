@@ -12,8 +12,6 @@ LAUNCHER  =
 #===============================================================================
 # Program name & source code list
 #===============================================================================
-SPATH = ../boxfilter-sycl
-
 program = main
 
 obj = main.o RecursiveGaussianHost.o shrUtils.o 
@@ -23,8 +21,7 @@ obj = main.o RecursiveGaussianHost.o shrUtils.o
 #===============================================================================
 
 # Standard Flags
-CFLAGS := $(EXTRA_CFLAGS) -std=c++17 -Xcompiler -Wall -arch=$(ARCH) \
-          -I../boxfilter-sycl
+CFLAGS := $(EXTRA_CFLAGS) -std=c++17 -Xcompiler -Wall -arch=$(ARCH)
 
 # Linker Flags
 LDFLAGS = 
@@ -47,13 +44,13 @@ endif
 $(program): $(obj)
 	$(CC) $(CFLAGS) $(obj) -o $@ $(LDFLAGS)
 
-main.o: main.cu $(SPATH)/shrUtils.h 
+main.o: main.cu shrUtils.h 
 	$(CC) $(CFLAGS) -c $< -o $@
 
 RecursiveGaussianHost.o: RecursiveGaussianHost.cpp main.h 
 	$(CC) $(CFLAGS) -c $< -o $@
 
-shrUtils.o : $(SPATH)/shrUtils.cpp $(SPATH)/shrUtils.h
+shrUtils.o : shrUtils.cpp shrUtils.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
