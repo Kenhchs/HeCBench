@@ -12,8 +12,6 @@ LAUNCHER  =
 #===============================================================================
 # Program name & source code list
 #===============================================================================
-SPATH = ../boxfilter-sycl
-
 program = main
 
 obj = main.o shrUtils.o
@@ -23,8 +21,7 @@ obj = main.o shrUtils.o
 #===============================================================================
 
 # Standard Flags
-CFLAGS := $(EXTRA_CFLAGS) -std=c++17 -Xcompiler -Wall -arch=$(ARCH) \
-          -I$(SPATH)
+CFLAGS := $(EXTRA_CFLAGS) -std=c++17 -Xcompiler -Wall -arch=$(ARCH)
 
 # Linker Flags
 LDFLAGS = 
@@ -48,15 +45,15 @@ endif
 $(program): $(obj)
 	$(CC) $(CFLAGS) $(obj) -o $@ $(LDFLAGS)
 
-main.o : main.cu helper_math.h permutations.h dds.h $(SPATH)/shrUtils.h
+main.o : main.cu helper_math.h permutations.h dds.h shrUtils.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-shrUtils.o : $(SPATH)/shrUtils.cpp $(SPATH)/shrUtils.h 
+shrUtils.o : shrUtils.cpp shrUtils.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm -rf $(program) $(obj)
 
 run: $(program)
-	$(LAUNCHER) ./$(program) ../dxtc2-sycl/data/lena_std.ppm ../dxtc2-sycl/data/lena_ref.dds 100
-	$(LAUNCHER) ./$(program) ../dxtc2-sycl/data/teapot512_std.ppm ../dxtc2-sycl/data/teapot512_ref.dds 100
+	$(LAUNCHER) ./$(program) ./data/lena_std.ppm ./data/lena_ref.dds 100
+	$(LAUNCHER) ./$(program) ./data/teapot512_std.ppm ./data/teapot512_ref.dds 100
