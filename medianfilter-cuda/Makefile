@@ -12,8 +12,6 @@ LAUNCHER  =
 #===============================================================================
 # Program name & source code list
 #===============================================================================
-SPATH = ../boxfilter-sycl
-
 program = main
 
 obj = main.o shrUtils.o MedianFilterHost.o
@@ -23,8 +21,7 @@ obj = main.o shrUtils.o MedianFilterHost.o
 #===============================================================================
 
 # Standard Flags
-CFLAGS := $(EXTRA_CFLAGS) -std=c++17 -Xcompiler -Wall -arch=$(ARCH) \
-          -I$(SPATH)
+CFLAGS := $(EXTRA_CFLAGS) -std=c++17 -Xcompiler -Wall -arch=$(ARCH)
 
 # Linker Flags
 LDFLAGS = 
@@ -47,17 +44,17 @@ endif
 $(program): $(obj)
 	$(CC) $(CFLAGS) $(obj) -o $@ $(LDFLAGS)
 
-main.o: main.cu MedianFilter.cu $(SPATH)/shrUtils.h
+main.o: main.cu MedianFilter.cu shrUtils.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 MedianFilterHost.o : MedianFilterHost.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
-shrUtils.o : $(SPATH)/shrUtils.cpp $(SPATH)/shrUtils.h
+shrUtils.o : shrUtils.cpp shrUtils.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm -rf $(program) $(obj)
 
 run: $(program)
-	$(LAUNCHER) ./$(program) ../medianfilter-sycl/data/SierrasRGB.ppm 1000
+	$(LAUNCHER) ./$(program) data/SierrasRGB.ppm 1000
