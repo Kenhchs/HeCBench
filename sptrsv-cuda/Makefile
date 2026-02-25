@@ -24,7 +24,7 @@ obj = main.o sptrsv_syncfree.o
 # Standard Flags
 CFLAGS := $(EXTRA_CFLAGS) -std=c++17 -Xcompiler -Wall -arch=$(ARCH) \
           -DWARP_SIZE=32 -DWARP_PER_BLOCK=8 \
-          -DVALUE_TYPE=double -I../sptrsv-sycl
+          -DVALUE_TYPE=double
 
 # Linker Flags
 LDFLAGS = 
@@ -47,11 +47,8 @@ endif
 $(program): $(obj) Makefile
 	$(CC) $(CFLAGS) $(obj) -o $@ $(LDFLAGS)
 
-main.o: ../sptrsv-sycl/main.cpp \
-	../sptrsv-sycl/mmio.h \
-	../sptrsv-sycl/read_mtx.h \
-	../sptrsv-sycl/sptrsv.h \
-	../sptrsv-sycl/tranpose.h
+main.o: main.cpp mmio.h read_mtx.h \
+		sptrsv.h tranpose.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 sptrsv_syncfree.o : sptrsv_syncfree.cu Makefile
@@ -61,4 +58,4 @@ clean:
 	rm -rf $(program) $(obj)
 
 run: $(program)
-	$(LAUNCHER) ./$(program) ../sptrsv-sycl/lp1.mtx 2000
+	$(LAUNCHER) ./$(program) ./lp1.mtx 2000
