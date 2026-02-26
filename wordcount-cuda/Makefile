@@ -15,8 +15,6 @@ LAUNCHER  =
 
 program = main
 
-source = ../wordcount-sycl/main.cpp wc.cu
-
 obj = main.o wc.o
 
 #===============================================================================
@@ -49,7 +47,7 @@ $(program): $(obj) Makefile
 wc.o: wc.cu Makefile
 	$(CC) $(CFLAGS) -c $< -o $@
 
-main.o: ../wordcount-sycl/main.cpp Makefile
+main.o: main.cpp Makefile
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
