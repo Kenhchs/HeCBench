@@ -1,5 +1,5 @@
 all:
-	$(MAKE) -C bin all
+	$(MAKE) -C bin
 
 run:
 	$(MAKE) -C bin run
