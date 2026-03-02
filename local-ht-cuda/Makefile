@@ -1,7 +1,7 @@
 SRC_DIR = src
 
 all:
-	$(MAKE) -C $(SRC_DIR) all
+	$(MAKE) -C $(SRC_DIR)
 
 run:
 	$(MAKE) -C $(SRC_DIR) run
