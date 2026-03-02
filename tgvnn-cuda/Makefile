@@ -1,5 +1,5 @@
 all:
-	$(MAKE) -C src all
+	$(MAKE) -C src
 
 run:
 	mkdir -p result
