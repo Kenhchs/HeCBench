@@ -66,4 +66,4 @@ clean:
 	rm -rf $(program) $(obj)
 
 run: $(program)
-	$(LAUNCHER) ./$(program) data/dirty_4096.img data/psf_4096.img 1000
+	$(LAUNCHER) ./$(program) dirty_4096.img psf_4096.img 1000
