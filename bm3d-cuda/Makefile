@@ -24,10 +24,10 @@ obj = $(source:.cu=.o)
 #===============================================================================
 
 # Standard Flags
-CFLAGS := $(EXTRA_CFLAGS) -std=c++17 -Xcompiler -Wall -arch=$(ARCH)
+CFLAGS := $(EXTRA_CFLAGS) -std=c++17 -Xcompiler -Wall -arch=$(ARCH) -Dcimg_use_png
 
 # Linker Flags
-LDFLAGS = -lpthread
+LDFLAGS = -lpthread -lpng
 
 # Debug Flags
 ifeq ($(DEBUG),yes)

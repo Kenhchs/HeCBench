@@ -372,6 +372,8 @@ int main(int argc, char** argv)
 
   if (argc >= 6) {
     CImg<unsigned char> reference_image(argv[5]);
+    if (reference_image.spectrum() > channels)
+      reference_image = reference_image.get_channels(0, channels - 1);
     std::cout << "PSNR:" << reference_image.PSNR(dst_image) << std::endl;
   }
 
