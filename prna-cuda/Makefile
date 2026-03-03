@@ -68,4 +68,4 @@ test: $(program)
 	./$(program) ./test.seq
 
 run: $(program)
-	$(LAUNCHER) ./$(program) ./HIV1-NL43.seq
+	DATAPATH=./data_tables $(LAUNCHER) ./$(program) ./HIV1-NL43.seq
