@@ -39,6 +39,6 @@ clean:
 	rm -f *.o *~ kmeans *.linkinfo
 
 run: kmeans
-	$(LAUNCHER) ./kmeans -r -n 5 -m 15 -l 10 -o -i ../data/kmeans/kdd_cup
+	$(LAUNCHER) ./kmeans -r -n 5 -m 15 -l 10 -o -i ./kdd_cup
 
 
