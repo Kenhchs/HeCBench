@@ -55,4 +55,4 @@ clean:
 	rm -rf $(program) $(obj)
 
 run: $(program)
-	$(LAUNCHER) ./$(program) --deck ../minibude-sycl/data/bm1  --wgsize 256 --iterations 100
+	$(LAUNCHER) ./$(program) --deck ./data/bm1  --wgsize 256 --iterations 100
