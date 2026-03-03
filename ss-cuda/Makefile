@@ -54,4 +54,4 @@ clean:
 	rm -rf $(program) $(obj)
 
 run: $(program)
-	$(LAUNCHER) ./$(program) ../ss-sycl/StringSearch_Input.txt clEnqueueNDRangeKernel 20000
+	$(LAUNCHER) ./$(program) ./StringSearch_Input.txt clEnqueueNDRangeKernel 20000
