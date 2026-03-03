@@ -90,7 +90,7 @@ int main(int argc, char* argv []){
   char* video_file_name;
 
   // open movie file
-  video_file_name = (char *) "../data/heartwall/test.avi";
+  video_file_name = (char *) "./test.avi";
   frames = (avi_t*)AVI_open_input_file(video_file_name, 1);                            // added casting
   if (frames == NULL)  {
     AVI_print_error((char *) "Error with AVI_open_input_file");
