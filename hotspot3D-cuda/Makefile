@@ -55,4 +55,4 @@ clean:
 	rm -rf $(program) $(obj) output.out
 
 run: $(program)
-	$(LAUNCHER) ./$(program) 512 8 5000 ../data/hotspot3D/power_512x8 ../data/hotspot3D/temp_512x8 output.out
+	$(LAUNCHER) ./$(program) 512 8 5000 ./power_512x8 ./temp_512x8 output.out
