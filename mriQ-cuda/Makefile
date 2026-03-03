@@ -56,4 +56,4 @@ clean:
 	rm -rf $(program) $(obj) output*
 
 run: $(program)
-	$(LAUNCHER) ./$(program) datasets/128x128x128/input/128x128x128.bin output_128
+	$(LAUNCHER) ./$(program) ./mri-q/datasets/128x128x128/input/128x128x128.bin output_128
