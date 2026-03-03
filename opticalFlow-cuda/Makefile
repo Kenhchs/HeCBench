@@ -53,4 +53,4 @@ clean:
 	rm -rf $(program) $(obj) *.flo
 
 run: $(program)
-	$(LAUNCHER) ./$(program)
+	$(LAUNCHER) ./$(program) data/frame10.ppm data/frame11.ppm
