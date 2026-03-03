@@ -54,11 +54,11 @@ clean:
 
 process: fpc.c
 	gcc -O3 fpc.c -o fpc
-	#./fpc < msg_sp.trace.fpc > msg_sp.trace.out
+	./fpc < test.trace.fpc > test.trace.out
 
-run: $(program)
-        # compression
-	$(LAUNCHER) ./$(program) msg_sp.trace.out 1
-        # decompression
+run: $(program) process
+	# compression
+	$(LAUNCHER) ./$(program) test.trace.out 1
+	# decompression
 	$(LAUNCHER) ./$(program) compression.txt
-	diff msg_sp.trace.out decompression.txt
+	diff test.trace.out decompression.txt
