@@ -53,4 +53,4 @@ clean:
 	rm -rf $(program) $(obj) *.out
 
 run: $(program)
-	$(LAUNCHER) ./$(program) 512 2 200 ../data/hotspot/temp_512 ../data/hotspot/power_512 output_512.out
+	$(LAUNCHER) ./$(program) 512 2 200 ./temp_512 ./power_512 output_512.out
