@@ -65,7 +65,13 @@ $(MATRIX_DIR)/meschach.a:
 	cd $(MATRIX_DIR); make cleanup; make all CC=$(CC); make clean
 
 run: leukocyte
-	$(LAUNCHER) ./leukocyte ../data/leukocyte/testfile.avi 100
+	@if [ ! -f testfile.avi ]; then \
+		echo "File not found. Downloading via gdownload..."; \
+		gdown --id 1IroBkm0-pO1dZafrVkAEfxilwXVn-DsV ;\
+	fi
+	@echo "Extracting archive..."
+	@tar -xzf leukocyte.tar.gz
+	$(LAUNCHER) ./leukocyte ./testfile.avi 100
 
 clean:
 	rm -f *.o *~ leukocyte 
