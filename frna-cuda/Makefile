@@ -68,4 +68,4 @@ test: $(program)
 	./$(program) ./RD0260.seq rd0260.out
 
 run: $(program)
-	$(LAUNCHER) ./$(program) ../prna-cuda/HIV1-NL43.seq  hiv1-nl43.out
+	DATAPATH=../prna-cuda/data_tables $(LAUNCHER) ./$(program) ../prna-cuda/HIV1-NL43.seq  hiv1-nl43.out
