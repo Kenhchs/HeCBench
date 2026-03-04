@@ -67,4 +67,11 @@ clean:
 	rm -rf $(program) $(obj)
 
 run: $(program)
+	@if [ ! -f ./data/simple-synthetic.su ]; then \
+		echo "Data file not found. Downloading..."; \
+		gdown --id 1ir3gyvEj6YoEutA3PjOdWzLGAlIWFo-d; \
+		tar -xvf cmp.tar.bz ;\
+	else \
+		echo "Data file already exists. Skipping download."; \
+	fi
 	$(LAUNCHER) ./$(program) -c0 1.98e-7 -c1 1.77e-6 -nc 5 -aph 600 -tau 0.002 -v 2 -i ./data/simple-synthetic.su
