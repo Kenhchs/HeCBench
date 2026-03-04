@@ -54,5 +54,12 @@ clean:
 	rm -rf $(program) $(obj)
 
 run: $(program)
-	$(LAUNCHER) ./$(program)
+	@if [ ! -d "query" ]; then \
+		echo "Dataset not found. Downloading via gdown..."; \
+		python3 -c "import gdown; gdown.download_folder(id='1JJ8UVJgYO2iANTlV5oEF_7z4jURtGX84', use_cookies=False)"; \
+		mkdir -p query reffiles-tab Results; \
+		unzip -j cudaMap/cudaMap-all.zip "cudaMap/queries/*" -d query; \
+		unzip -j cudaMap/cudaMap-all.zip "cudaMap/reffiles-tab/*" -d reffiles-tab; \
+	fi
+	echo -e "\n\n\n" | $(LAUNCHER) ./$(program)
 
