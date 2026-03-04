@@ -55,5 +55,12 @@ clean:
 	rm -rf $(program) $(obj)
 
 run: $(program)
-	$(LAUNCHER) ulimit -s unlimited	
+	@if [ ! -f delaunay_n24.egr ]; then \
+		echo "Input file not found. Downloading archive with gdown..."; \
+		gdown 1x_FDiFnKPeY4VGqo9a4q6NNuIlN_OjLP -O delaunay_n24.tar.gz; \
+		echo "Extracting archive..."; \
+		tar -xzf delaunay_n24.tar.gz; \
+		rm -f delaunay_n24.tar.gz; \
+	fi
+	ulimit -s unlimited	
 	./$(program) delaunay_n24.egr 100
