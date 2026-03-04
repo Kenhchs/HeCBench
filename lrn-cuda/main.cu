@@ -23,7 +23,6 @@ void Forward(int repeat)
   int64_t wk_size = N*C*D*H*W;
 
   std::vector<float> src(wk_size, 0);
-  std::vector<float> dst(wk_size, 0);
 
   srand(123);
   for (int64_t i = 0; i < wk_size; i++) { 
@@ -38,7 +37,7 @@ void Forward(int repeat)
   size_t bytes_to_copy_d = wk_size * sizeof(float);
   float *dst_mem;
   cudaMalloc((void**)&dst_mem, bytes_to_copy_d);
-  cudaMemcpy(dst_mem, dst.data(), bytes_to_copy_d, cudaMemcpyHostToDevice);
+  cudaMemset(dst_mem, 0, bytes_to_copy_d);
 
   printf("Sweep the work-group sizes from 64 to 512\n");
   for (int wg_size = 64; wg_size <= 512; wg_size = wg_size * 2) {
@@ -65,10 +64,10 @@ void Forward(int repeat)
     printf("Kernel bandwidth: %.6f GB/s \n", bandwidth);
   }
 
-  cudaMemcpy(dst.data(), dst_mem, bytes_to_copy_d, cudaMemcpyDeviceToHost);
+  cudaMemcpy(src.data(), dst_mem, bytes_to_copy_d, cudaMemcpyDeviceToHost);
   double checksum = 0;
   for (int64_t i = 0; i < wk_size; i++) { 
-    checksum += dst[i];
+    checksum += src[i];
   }
   printf("Checksum: %lf\n", checksum / wk_size);
 
@@ -93,12 +92,10 @@ void Backward(int repeat)
   int64_t wk_size = N*C*D*H*W;
 
   std::vector<float> src(wk_size, 0);
-  std::vector<float> dst(wk_size, 0);
-  std::vector<float> diff_src(wk_size, 0);
 
   srand(123);
   for (int64_t i = 0; i < wk_size; i++) { 
-    diff_src[i] = src[i] = rand() / (float)RAND_MAX;
+    src[i] = rand() / (float)RAND_MAX;
   }
 
   float *src_mem;
@@ -109,7 +106,7 @@ void Backward(int repeat)
   float *diff_src_mem;
   size_t bytes_to_copy_diff = wk_size * sizeof(float);
   cudaMalloc((void**)&diff_src_mem, bytes_to_copy_diff);
-  cudaMemcpy(diff_src_mem, diff_src.data(), bytes_to_copy_diff, cudaMemcpyHostToDevice);
+  cudaMemcpy(diff_src_mem, src.data(), bytes_to_copy_diff, cudaMemcpyHostToDevice);
 
   float *dst_mem;
   size_t bytes_to_copy_d = wk_size * sizeof(float);
@@ -142,10 +139,10 @@ void Backward(int repeat)
   }
 
 
-  cudaMemcpy(dst.data(), dst_mem, bytes_to_copy_d, cudaMemcpyDeviceToHost);
+  cudaMemcpy(src.data(), dst_mem, bytes_to_copy_d, cudaMemcpyDeviceToHost);
   double checksum = 0;
   for (int64_t i = 0; i < wk_size; i++) { 
-    checksum += dst[i];
+    checksum += src[i];
   }
   printf("Checksum: %lf\n", checksum / wk_size);
   cudaFree(src_mem);
