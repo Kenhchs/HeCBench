@@ -70,7 +70,7 @@ main.o:	./common.h ./main.h ./main.cu
 	$(CC)	./util/num/num.c -c -o ./util/num/num.o 
 
 run: b+tree.out
-	$(LAUNCHER) ./b+tree.out file ../data/b+tree/mil.txt command ../data/b+tree/command.txt
+	$(LAUNCHER) ./b+tree.out file ./mil.txt command ./command.txt
 
 clean:
 	rm	-rf *.o *.out \
