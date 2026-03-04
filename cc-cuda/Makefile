@@ -62,5 +62,4 @@ run: $(program)
 		tar -xzf delaunay_n24.tar.gz; \
 		rm -f delaunay_n24.tar.gz; \
 	fi
-	ulimit -s unlimited	
-	./$(program) delaunay_n24.egr 100
+	ulimit -s unlimited	&& ./$(program) delaunay_n24.egr 100
