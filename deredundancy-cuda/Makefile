@@ -58,5 +58,5 @@ clean:
 	rm -rf $(program) $(obj)
 
 run: $(program)
-	$(LAUNCHER) ./$(program) i ../deredundancy-sycl/testData.fasta
+	$(LAUNCHER) ./$(program) i ./testData.fasta
 
