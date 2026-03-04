@@ -59,5 +59,5 @@ clean:
 	rm -rf $(program) $(obj)
 
 run: $(program)
-	$(LAUNCHER) ./$(program) ../data/cfd/fvcorr.domn.097K
+	$(LAUNCHER) ./$(program) ./fvcorr.domn.097K
 
