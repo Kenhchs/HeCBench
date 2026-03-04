@@ -117,12 +117,10 @@ int main(int argc, char* argv[])
 
     int batch_size_bytes = (batch_size + 1) * sizeof(float);
 
-    float *input, *dense, *output_k1, *output_k2, *output_k3, *output_ref;
+    float *input, *dense, *output_k, *output_ref;
     input = (float*) malloc (input_size_bytes); // [sum(*) x embedding_dim]
     dense = (float*) malloc (dense_size_bytes); // [batch_size x embedding_dim]
-    output_k1 = (float*) malloc (input_size_bytes); // [sum(*) x embedding_dim]
-    output_k2 = (float*) malloc (input_size_bytes); // [sum(*) x embedding_dim]
-    output_k3 = (float*) malloc (input_size_bytes); // [sum(*) x embedding_dim]
+    output_k = (float*) malloc (input_size_bytes); // [sum(*) x embedding_dim]
     output_ref = (float*) malloc (input_size_bytes); // [sum(*) x embedding_dim]
     int *input_offset = (int*) malloc (batch_size_bytes);  // [batch_size]
 
@@ -175,7 +173,12 @@ int main(int argc, char* argv[])
       auto end = std::chrono::steady_clock::now();
       auto time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
       printf("Average execution time of dense embedding kernel (k1): %f (us)\n", (time * 1e-3f) / repeat);
-      cudaMemcpy(output_k1, d_output, input_size_bytes, cudaMemcpyDeviceToHost);
+      cudaMemcpy(output_k, d_output, input_size_bytes, cudaMemcpyDeviceToHost);
+
+      bool ok = true;
+      for (int i = 0; i < input_size; i++) {
+        if (fabsf(output_k[i] - output_ref[i]) > 1e-3f) { ok = false; break; }
+      }
 
       cudaMemset(d_output, 0, input_size_bytes);
       cudaDeviceSynchronize();
@@ -188,7 +191,11 @@ int main(int argc, char* argv[])
       end = std::chrono::steady_clock::now();
       time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
       printf("Average execution time of dense embedding kernel (k2): %f (us)\n", (time * 1e-3f) / repeat);
-      cudaMemcpy(output_k2, d_output, input_size_bytes, cudaMemcpyDeviceToHost);
+      cudaMemcpy(output_k, d_output, input_size_bytes, cudaMemcpyDeviceToHost);
+
+      for (int i = 0; i < input_size; i++) {
+        if (fabsf(output_k[i] - output_ref[i]) > 1e-3f) { ok = false; break; }
+      }
 
       cudaMemset(d_output, 0, input_size_bytes);
       cudaDeviceSynchronize();
@@ -201,17 +208,12 @@ int main(int argc, char* argv[])
       end = std::chrono::steady_clock::now();
       time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
       printf("Average execution time of dense embedding kernel (k3): %f (us)\n", (time * 1e-3f) / repeat);
-      cudaMemcpy(output_k3, d_output, input_size_bytes, cudaMemcpyDeviceToHost);
+      cudaMemcpy(output_k, d_output, input_size_bytes, cudaMemcpyDeviceToHost);
 
-      bool ok = true;
       for (int i = 0; i < input_size; i++) {
-        if (fabsf(output_k1[i] - output_ref[i]) > 1e-3f ||
-            fabsf(output_k2[i] - output_ref[i]) > 1e-3f ||
-            fabsf(output_k3[i] - output_ref[i]) > 1e-3f) {
-          ok = false;
-          break;
-        }
+        if (fabsf(output_k[i] - output_ref[i]) > 1e-3f) { ok = false; break; }
       }
+
       printf("%s\n", ok ? "PASS" : "FAIL");
     }
 
@@ -222,9 +224,7 @@ int main(int argc, char* argv[])
 
     free(input);
     free(dense);
-    free(output_k1);
-    free(output_k2);
-    free(output_k3);
+    free(output_k);
     free(output_ref);
     free(input_offset);
   }
