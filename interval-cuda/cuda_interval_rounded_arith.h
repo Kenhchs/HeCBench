@@ -116,7 +116,13 @@ struct rounded_arith<float> {
 
   __device__ float pos_inf() { return __int_as_float(0x7f800000); }
 
-  __device__ __host__ float nan() { return nanf(""); }
+  __device__ __host__ float nan() { 
+#ifdef __clang__
+    return __builtin_nanf("");
+#else
+    return nanf(""); 
+#endif
+  }
 
   __device__ float min(float const &x, float const &y) { return fminf(x, y); }
 
@@ -186,7 +192,13 @@ struct rounded_arith<double> {
   __device__ double pos_inf() {
     return __longlong_as_double(0x7ff0000000000000ull);
   }
-  __device__ __host__ double nan() { return ::nan(""); }
+  __device__ __host__ double nan() { 
+#ifdef __clang__
+    return __builtin_nan("");
+#else
+    return ::nan(""); 
+#endif
+  }
 
   __device__ double min(double const &x, double const &y) { return fmin(x, y); }
 
