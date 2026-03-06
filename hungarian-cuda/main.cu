@@ -110,10 +110,10 @@ __device__ data min_in_mat_col[ncols];        // Used in step 1 to stores the mi
 __device__ data d_min_in_mat_vect[n_blocks_reduction];  // Used in step 6 to stores the intermediate results from the first reduction kernel
 __device__ data d_min_in_mat;                 // Used in step 6 to store the minimum
 
-MANAGED __device__ int zeros_size;            // The number fo zeros
-MANAGED __device__ int n_matches;             // Used in step 3 to count the number of matches found
-MANAGED __device__ bool goto_5;               // After step 4, goto step 5?
-MANAGED __device__ bool repeat_kernel;        // Needs to repeat the step 2 and step 4 kernel?
+__device__ int zeros_size;            // The number fo zeros
+__device__ int n_matches;             // Used in step 3 to count the number of matches found
+__device__ bool goto_5;               // After step 4, goto step 5?
+__device__ bool repeat_kernel;        // Needs to repeat the step 2 and step 4 kernel?
 
 __shared__ extern data sdata[];               // For access to shared memory
 
@@ -584,11 +584,16 @@ void Hungarian_Algorithm()
   call_kernel(compress_matrix, n_blocks_full, n_threads_full);
 
   // Step 2 kernels
+  bool h_repeat_kernel;
   do {
-    repeat_kernel = false;
-    call_kernel(step_2, n_blocks_step_4, (n_blocks_step_4 > 1 || zeros_size > max_threads_per_block) ? max_threads_per_block : zeros_size);
+    h_repeat_kernel = false;
+    cudaMemcpyToSymbol(repeat_kernel, &h_repeat_kernel, sizeof(bool));
+    int h_zeros_size;
+    cudaMemcpyFromSymbol(&h_zeros_size, zeros_size, sizeof(int));
+    call_kernel(step_2, n_blocks_step_4, (n_blocks_step_4 > 1 || h_zeros_size > max_threads_per_block) ? max_threads_per_block : h_zeros_size);
     // If we have more than one block it means that we have 512 lines per block so 1024 threads should be adequate.
-  } while (repeat_kernel);
+    cudaMemcpyFromSymbol(&h_repeat_kernel, repeat_kernel, sizeof(bool));
+  } while (h_repeat_kernel);
 
   while (1) {  // repeat steps 3 to 6
 
@@ -596,22 +601,33 @@ void Hungarian_Algorithm()
     call_kernel(step_3ini, n_blocks, n_threads);
     call_kernel(step_3, n_blocks, n_threads);
 
-    if (n_matches >= ncols) break;      // It's done
+    int h_n_matches;
+    cudaMemcpyFromSymbol(&h_n_matches, n_matches, sizeof(int));
+    if (h_n_matches >= ncols) break;      // It's done
 
     //step 4_kernels
     call_kernel(step_4_init, n_blocks, n_threads);
 
     while (1) // repeat step 4 and 6
     {
+      bool h_goto_5 = false;
+      bool h_repeat_kernel = false;
       do {  // step 4 loop
-        goto_5 = false; repeat_kernel = false; 
+        h_goto_5 = false; 
+        h_repeat_kernel = false; 
+        cudaMemcpyToSymbol(goto_5, &h_goto_5, sizeof(bool));
+        cudaMemcpyToSymbol(repeat_kernel, &h_repeat_kernel, sizeof(bool));
+        int h_zeros_size;
+        cudaMemcpyFromSymbol(&h_zeros_size, zeros_size, sizeof(int));
 
-        call_kernel(step_4, n_blocks_step_4, (n_blocks_step_4 > 1 || zeros_size > max_threads_per_block) ? max_threads_per_block : zeros_size);
+        call_kernel(step_4, n_blocks_step_4, (n_blocks_step_4 > 1 || h_zeros_size > max_threads_per_block) ? max_threads_per_block : h_zeros_size);
         // If we have more than one block it means that we have 512 lines per block so 1024 threads should be adequate.
 
-      } while (repeat_kernel && !goto_5);
+        cudaMemcpyFromSymbol(&h_repeat_kernel, repeat_kernel, sizeof(bool));
+        cudaMemcpyFromSymbol(&h_goto_5, goto_5, sizeof(bool));
+      } while (h_repeat_kernel && !h_goto_5);
 
-      if (goto_5) break;
+      if (h_goto_5) break;
 
       //step 6_kernel
       call_kernel_s(min_reduce_kernel1, n_blocks_reduction, n_threads_reduction, n_threads_reduction*sizeof(int));
