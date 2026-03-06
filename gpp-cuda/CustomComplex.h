@@ -13,7 +13,7 @@
 #include <memory>
 #include <sys/time.h>
 
-#if defined(__NVCC__) || defined(__HIPCC__)
+#if defined(__NVCC__) || defined(__HIPCC__) || defined(__clang__)
 #define ESS __host__ __device__
 #else
 #define ESS
