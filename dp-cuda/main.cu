@@ -142,6 +142,7 @@ void dot (const size_t iNumElements, const int iNumIterations)
   cudaMemcpy(&dst, d_dst, sizeof(T), cudaMemcpyDeviceToHost);
   printf("%s\n\n", dst == T(0) ? "PASS" : "FAIL");
 
+#ifndef __clang__
   start = std::chrono::steady_clock::now();
 
   for (int i = 0; i < iNumIterations; i++) {
@@ -153,6 +154,10 @@ void dot (const size_t iNumElements, const int iNumIterations)
   time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
   printf("Average std::transform_reduce execution time %f (ms)\n", (time * 1e-6f) / iNumIterations);
   printf("%s\n\n", dst == T(0) ? "PASS" : "FAIL");
+#else
+  // stdpar is currently unsupported cleanly on clang++ natively for this benchmark
+  // Skip this test cleanly for clang to avoid segmentation fault on host-side TBB execution
+#endif
 
   cudaFree(d_dst);
   cudaFree(d_srcA);
