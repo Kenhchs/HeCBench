@@ -99,9 +99,9 @@ findMaxFour(short first, short second, short third, short fourth)
 {
   short maxScore = 0;
 
-  maxScore = max(first,second);
-  maxScore = max(maxScore, third);
-  maxScore = max(maxScore, fourth);
+  maxScore = std::max(first,second);
+  maxScore = std::max(maxScore, third);
+  maxScore = std::max(maxScore, fourth);
 
   return maxScore;
 }
