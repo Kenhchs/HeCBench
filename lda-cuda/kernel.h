@@ -9,7 +9,7 @@
 
 __inline__ __device__
 float warp_reduce_sum(float val) {
-  #if __CUDACC_VER_MAJOR__ >= 9
+  #if __CUDACC_VER_MAJOR__ >= 9 || defined(__clang__)
   // __shfl_down is deprecated with cuda 9+
   unsigned int active = __activemask();
   #pragma unroll
