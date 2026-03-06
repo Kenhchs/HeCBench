@@ -56,6 +56,11 @@ int main(int argc, char *argv[])
   for (int i = 0; i < repeat; i++)
     kernel<<<grids, blocks>>>(d_x, d_output, points);
 
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess) {
+    printf("Kernel launch failed: %s\n", cudaGetErrorString(err));
+  }
+
   cudaDeviceSynchronize();
   auto end = std::chrono::steady_clock::now();
   auto time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
