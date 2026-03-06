@@ -9,6 +9,11 @@ Kernels for layernorm forward pass.
 #include "reference.h"
 #include "utils.cuh"
 #include "reduce.cuh"
+#ifdef __clang__
+__device__ __forceinline__ void __stcs(float* ptr, float val) {
+  asm volatile("st.global.cs.f32 [%0], %1;" : : "l"(ptr), "f"(val) : "memory");
+}
+#endif
 
 template <int UNROLL>
 __global__
